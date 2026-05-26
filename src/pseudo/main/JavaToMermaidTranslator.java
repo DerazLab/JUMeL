@@ -67,22 +67,29 @@ public class JavaToMermaidTranslator {
 
         List<ClassSymbol> clases = obtenerClases(ts);
 
-        // ⋆˖⁺‧₊☽⛥Generar relaciones de Herencia y Composicion primero⛥☾₊‧⁺˖⋆ //
+        // ⋆˖⁺‧₊☽⛥Generar relaciones de Herencia, Implementacion y Composicion primero⛥☾₊‧⁺˖⋆ //
         for (ClassSymbol cls : clases) {
             if (cls.getParentScope() instanceof ClassSymbol) {
                 sb.append("    ").append(((ClassSymbol) cls.getParentScope()).getName())
                   .append(" <|-- ").append(cls.getName()).append("\n");
             }
 
+            for (ClassSymbol iface : cls.getImplementedInterfaces()) {
+                sb.append("    ").append(iface.getName())
+                  .append(" <|.. ").append(cls.getName()).append("\n");
+            }
+
             for (Symbol member : cls.getMembers().values()) {
                 if (member instanceof VariableSymbol) {
                     Type t = member.getType();
-                    if (t instanceof ClassSymbol) {
-                        sb.append("    ").append(cls.getName())
-                          .append(" *-- ").append(((ClassSymbol) t).getName()).append("\n");
-                    } else if (t != null) {
-                        // Si el tipo es el nombre de alguna clase registrada en la tabla
-                        Symbol resolved = ts.resolve(t.getName());
+                    if (t != null) {
+                        String typeName = t.getName();
+                        // ⋆˖⁺‧₊☽⛥Si es un arreglo (ej. PaqueteDatos[]), removemos los corchetes para detectar la relacion⛥☾₊‧⁺˖⋆ //
+                        if (typeName.endsWith("[]")) {
+                            typeName = typeName.substring(0, typeName.length() - 2);
+                        }
+                        
+                        Symbol resolved = ts.resolve(typeName);
                         if (resolved instanceof ClassSymbol) {
                             sb.append("    ").append(cls.getName())
                               .append(" *-- ").append(resolved.getName()).append("\n");
@@ -92,29 +99,35 @@ public class JavaToMermaidTranslator {
             }
         }
 
-        // ⋆˖⁺‧₊☽⛥Generar las definiciones de clases con sus miembros⛥☾₊‧⁺˖⋆ //
+        // ⋆˖⁺‧₊☽⛥Generar las definiciones de clases con sus miembros, estereotipos y modificadores static⛥☾₊‧⁺˖⋆ //
         for (ClassSymbol cls : clases) {
             sb.append("    class ").append(cls.getName()).append(" {\n");
 
+            if (cls.isInterface()) {
+                sb.append("        <<Interfaz>>\n");
+            } else if (cls.isAbstract()) {
+                sb.append("        <<Abstracta>>\n");
+            }
+
             for (Symbol member : cls.getMembers().values()) {
                 String prefix = obtenerPrefijo(member.getAccessModifier());
+                String staticSuffix = member.isStatic() ? "$" : "";
+                
                 if (member instanceof VariableSymbol) {
                     sb.append("        ").append(prefix)
                       .append(member.getType() != null ? member.getType().getName() : "Object")
-                      .append(" ").append(member.getName()).append("\n");
+                      .append(" ").append(member.getName()).append(staticSuffix).append("\n");
                 } else if (member instanceof MethodSymbol) {
                     MethodSymbol method = (MethodSymbol) member;
                     sb.append("        ").append(prefix).append(method.getName()).append("(");
                     
-                    // Parametros del metodo
                     List<String> pList = new ArrayList<>();
                     for (Symbol p : method.getMembers().values()) {
                         pList.add((p.getType() != null ? p.getType().getName() : "Object") + " " + p.getName());
                     }
-                    // Invertir o respetar orden si es necesario, o unirlos directamente
                     sb.append(String.join(", ", pList));
                     
-                    sb.append(") ").append(method.getType() != null ? method.getType().getName() : "void").append("\n");
+                    sb.append(") ").append(method.getType() != null ? method.getType().getName() : "void").append(staticSuffix).append("\n");
                 }
             }
             sb.append("    }\n");

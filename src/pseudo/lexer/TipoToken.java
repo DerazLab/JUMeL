@@ -54,6 +54,13 @@ public class TipoToken
     public static String LLAVEIZQ = "LLAVEIZQ";
     public static String LLAVEDER = "LLAVEDER";
     public static String PUNTOYCOMA = "PUNTOYCOMA";
+    
+    public static String INTERFACE = "INTERFACE";
+    public static String ABSTRACT = "ABSTRACT";
+    public static String IMPLEMENTS = "IMPLEMENTS";
+    public static String STATIC = "STATIC";
+    public static String CORCHETEIZQ = "CORCHETEIZQ";
+    public static String CORCHETEDER = "CORCHETEDER";
 }
 
 

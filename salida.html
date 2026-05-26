@@ -72,22 +72,32 @@
         <div class="diagram-wrapper">
             <pre class="mermaid">
 classDiagram
-    Persona <|-- Estudiante
-    Estudiante *-- Direccion
-    class Persona {
-        -String curp
-        #String fechaNacimiento
-        +mostrarDatos() void
+    NodoRed <|-- ServidorWired
+    IProtocolo <|.. ServidorWired
+    ServidorWired *-- PaqueteDatos
+    class NodoRed {
+        <<Abstracta>>
+        #String direccionIP
+        +int anchoBanda
+        +establecerConexion() void
+        +transmitir() void
     }
-    class Estudiante {
-        -int matricula
-        +String nombre
-        +Direccion domicilio
-        +estudiar() void
+    class IProtocolo {
+        <<Interfaz>>
+        +enrutarDatos() void
     }
-    class Direccion {
-        +String calle
-        -int numero
+    class PaqueteDatos {
+        -String payload
+        +int tamañoBits
+        +encriptar() void
+    }
+    class ServidorWired {
+        -String hostName
+        #int rangoAccesoIntranet
+        -int limiteConexiones$
+        +PaqueteDatos[] colaMensajes
+        +enrutarDatos() void
+        +transmitir() void
     }
 
             </pre>

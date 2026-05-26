@@ -41,11 +41,17 @@ public class PseudoLexer {
         tipos.add(new TipoToken(TipoToken.PROTECTED, "protected\\b"));
         tipos.add(new TipoToken(TipoToken.CLASS, "class\\b"));
         tipos.add(new TipoToken(TipoToken.EXTENDS, "extends\\b"));
+        tipos.add(new TipoToken(TipoToken.INTERFACE, "interface\\b"));
+        tipos.add(new TipoToken(TipoToken.ABSTRACT, "abstract\\b"));
+        tipos.add(new TipoToken(TipoToken.IMPLEMENTS, "implements\\b"));
+        tipos.add(new TipoToken(TipoToken.STATIC, "static\\b"));
+        tipos.add(new TipoToken(TipoToken.CORCHETEIZQ, "\\["));
+        tipos.add(new TipoToken(TipoToken.CORCHETEDER, "\\]"));
         tipos.add(new TipoToken(TipoToken.LLAVEIZQ, "\\{"));
         tipos.add(new TipoToken(TipoToken.LLAVEDER, "\\}"));
         tipos.add(new TipoToken(TipoToken.PUNTOYCOMA, ";"));
         
-        tipos.add(new TipoToken(TipoToken.VARIABLE, "[a-zA-Z_][a-zA-Z0-9_]*"));
+        tipos.add(new TipoToken(TipoToken.VARIABLE, "[a-zA-Z_áéíóúÁÉÍÓÚñÑ][a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]*"));
         tipos.add(new TipoToken(TipoToken.ESPACIO, "[ \t\f\r\n]+"));
         tipos.add(new TipoToken(TipoToken.ERROR, "[^ \t\f\n]+"));
         

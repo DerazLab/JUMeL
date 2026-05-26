@@ -7,6 +7,15 @@ public class Symbol {
     
     // ⋆˖⁺‧₊☽⛥Almacena el modificador de acceso de Java: public, private, protected, o vacio⛥☾₊‧⁺˖⋆ //
     private String accessModifier = "";
+    private boolean isStatic = false;
+
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public void setStatic(boolean isStatic) {
+        this.isStatic = isStatic;
+    }
 
     public Symbol(String name) {
         this.name = name;
