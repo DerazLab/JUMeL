@@ -44,5 +44,16 @@ public class TipoToken
     public static String VARIABLES = "VARIABLES";
     public static String REPITE = "REPITE";
     public static String FINREPITE = "FINREPITE";
+
+    // ⋆˖⁺‧₊☽⛥Tokens de Java para la generacion de diagramas UML⛥☾₊‧⁺˖⋆ //
+    public static String PUBLIC = "PUBLIC";
+    public static String PRIVATE = "PRIVATE";
+    public static String PROTECTED = "PROTECTED";
+    public static String CLASS = "CLASS";
+    public static String EXTENDS = "EXTENDS";
+    public static String LLAVEIZQ = "LLAVEIZQ";
+    public static String LLAVEDER = "LLAVEDER";
+    public static String PUNTOYCOMA = "PUNTOYCOMA";
 }
+
 

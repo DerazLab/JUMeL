@@ -10,6 +10,9 @@ public class PseudoLexer {
     private ArrayList<Token> tokens = new ArrayList<>();
 
     public PseudoLexer() {
+        // ⋆˖⁺‧₊☽⛥Registramos comentarios al inicio para evitar que '/' sea confundido con un operador aritmetico⛥☾₊‧⁺˖⋆ //
+        tipos.add(new TipoToken("COMENTARIO", "//.*|/\\*(?s).*?\\*/"));
+
         tipos.add(new TipoToken(TipoToken.NUMERO, "-?[0-9]+(\\.[0-9]+)?"));
         tipos.add(new TipoToken(TipoToken.CADENA, "\".*\""));
         tipos.add(new TipoToken(TipoToken.OPARITMETICO, "[*/+-]"));
@@ -31,6 +34,17 @@ public class PseudoLexer {
         tipos.add(new TipoToken(TipoToken.VARIABLES, "variables *:"));
         tipos.add(new TipoToken(TipoToken.REPITE, "repite"));
         tipos.add(new TipoToken(TipoToken.FINREPITE, "fin-repite"));
+        
+        // ⋆˖⁺‧₊☽⛥Registramos las palabras reservadas y simbolos de Java antes del patron general de VARIABLE⛥☾₊‧⁺˖⋆ //
+        tipos.add(new TipoToken(TipoToken.PUBLIC, "public\\b"));
+        tipos.add(new TipoToken(TipoToken.PRIVATE, "private\\b"));
+        tipos.add(new TipoToken(TipoToken.PROTECTED, "protected\\b"));
+        tipos.add(new TipoToken(TipoToken.CLASS, "class\\b"));
+        tipos.add(new TipoToken(TipoToken.EXTENDS, "extends\\b"));
+        tipos.add(new TipoToken(TipoToken.LLAVEIZQ, "\\{"));
+        tipos.add(new TipoToken(TipoToken.LLAVEDER, "\\}"));
+        tipos.add(new TipoToken(TipoToken.PUNTOYCOMA, ";"));
+        
         tipos.add(new TipoToken(TipoToken.VARIABLE, "[a-zA-Z_][a-zA-Z0-9_]*"));
         tipos.add(new TipoToken(TipoToken.ESPACIO, "[ \t\f\r\n]+"));
         tipos.add(new TipoToken(TipoToken.ERROR, "[^ \t\f\n]+"));
@@ -47,7 +61,7 @@ public class PseudoLexer {
         StringBuffer er = new StringBuffer();
 
         for (TipoToken tt: tipos)
-            er.append(String.format("|(?<%s>%s)", tt.getNombre(), tt.getPatron()));
+            er.append(String.format("|(?<%s>%s)", tt.getNombre().equals("COMENTARIO") ? "COMENTARIO" : tt.getNombre(), tt.getPatron()));
 
         Pattern p = Pattern.compile(new String(er.substring(1)));
         Matcher m = p.matcher(entrada);
@@ -56,16 +70,13 @@ public class PseudoLexer {
         {
             for (TipoToken tt: tipos)
             {
+                // ⋆˖⁺‧₊☽⛥Ignoramos espacios en blanco y comentarios de forma directa⛥☾₊‧⁺˖⋆ //
                 if (m.group(TipoToken.ESPACIO) != null)
+                    continue;
+                else if (m.group("COMENTARIO") != null)
                     continue;
                 else if (m.group(tt.getNombre()) != null)
                 {
-                    if (tt.getNombre().equals(TipoToken.ERROR))
-                    {
-                        LexicalException ex = new LexicalException(m.group(tt.getNombre()));
-                        throw ex;
-                    }
-
                     String nombre = m.group(tt.getNombre());
 
                     if (tt.getNombre().equals(TipoToken.CADENA))

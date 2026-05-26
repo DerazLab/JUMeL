@@ -4,54 +4,39 @@ import java.util.ArrayList;
 import java.util.List;
 import pseudo.lexer.*;
 import pseudo.symbols.*;
-import pseudo.intermedio.*;
 import pseudo.exceptions.*;
 
-// •───⋅⋆⁺‧₊☽⛦ Analizador sintactico ⛦☾₊‧⁺⋆⋅───•
+// •───⋅⋆⁺‧₊☽⛥ Analizador sintactico adaptado para Java ⛦☾₊‧⁺⋆⋅───•
 public class PseudoParser {
     private ArrayList<Token> tokens;
     private int indiceToken = 0;
     
     // Variables para semantica y traduccion
     private SymbolTable symbolTable;
-    private PseudoGenerador generador;
-
+    private Scope currentScope;
     private List<String> errors;
-    /*
-    private StringBuilder cScript;
-    private StringBuilder pyScript;
-    private int indentLevel;
 
-    
-    public PseudoParser() {
-        this.symbolTable = new SymbolTable();
-        this.errors = new ArrayList<>();
-        this.cScript = new StringBuilder();
-        this.pyScript = new StringBuilder();
-        this.indentLevel = 0;
-    }
-    */
-
-    public PseudoParser(SymbolTable ts, PseudoGenerador generador) {
+    public PseudoParser(SymbolTable ts) {
         this.symbolTable = ts;
-        this.generador = generador;
+        this.currentScope = ts;
         this.errors = new ArrayList<>();
     }
 
+    // ⋆˖⁺‧₊☽⛥Constructor compatible con llamadas existentes⛥☾₊‧⁺˖⋆ //
+    public PseudoParser(SymbolTable ts, Object generadorIgnorado) {
+        this(ts);
+    }
 
     public void analizar(PseudoLexer lexer) throws SyntaxException {
         this.tokens = lexer.getTokens();
         this.indiceToken = 0;
+        this.currentScope = symbolTable;
 
         if (tokens == null || tokens.isEmpty()) return;
 
-        programa();
-
-        if (!errors.isEmpty()) {
-            System.out.println("\n--- Errores Semanticos ---");
-            for (String err : errors) {
-                System.out.println(err);
-            }
+        // ⋆˖⁺‧₊☽⛥Analiza secuencialmente las clases del archivo fuente de Java⛥☾₊‧⁺˖⋆ //
+        while (indiceToken < tokens.size()) {
+            clase();
         }
     }
 
@@ -79,229 +64,154 @@ public class PseudoParser {
         }
     }
 
-    private void registrarVariable(String nombre) {
-        if (symbolTable.resolve(nombre) == null) {
-            BuiltInTypeSymbol tipo = (BuiltInTypeSymbol) symbolTable.resolve("float");
-            symbolTable.define(new VariableSymbol(nombre, tipo));
+    private void consumirCuerpoMetodo() throws SyntaxException {
+        if (match(TipoToken.LLAVEIZQ)) {
+            int braceCount = 1;
+            while (braceCount > 0 && indiceToken < tokens.size()) {
+                Token t = tokens.get(indiceToken);
+                if (t.getTipo().getNombre().equals(TipoToken.LLAVEIZQ)) {
+                    braceCount++;
+                } else if (t.getTipo().getNombre().equals(TipoToken.LLAVEDER)) {
+                    braceCount--;
+                }
+                indiceToken++;
+            }
+        } else {
+            expect(TipoToken.PUNTOYCOMA);
         }
     }
-
-    /*
-    private String getIndentation(int level) {
-        StringBuilder spaces = new StringBuilder();
-        for (int i = 0; i < level; i++) {
-            spaces.append("    ");
-        }
-        return spaces.toString();
-    }
-    */
 
     // ================= REGLAS GRAMATICALES =================
 
-    private void programa() throws SyntaxException {
-        expect(TipoToken.INICIOPROGRAMA);
-        declaracionVariables();
-        sentencias();
-        expect(TipoToken.FINPROGRAMA);
-        generador.crearTuplaFinPrograma();
-    }
-
-    private void declaracionVariables() throws SyntaxException {
-        if (match(TipoToken.VARIABLES)) {
-            do {
-                String varName = getToken().getNombre();
-                expect(TipoToken.VARIABLE);
-                BuiltInTypeSymbol tipo = (BuiltInTypeSymbol) symbolTable.resolve("float");
-                if (symbolTable.resolve(varName) == null) {
-                    symbolTable.define(new VariableSymbol(varName, tipo));
-                }
-            } while (match(TipoToken.COMA));
-        }
-    }
-
-    private void sentencias() throws SyntaxException {
-        while (indiceToken < tokens.size() &&
-               !getToken().getTipo().getNombre().equals(TipoToken.FINPROGRAMA) &&
-               !getToken().getTipo().getNombre().equals(TipoToken.FINSI) &&
-               !getToken().getTipo().getNombre().equals(TipoToken.FINMIENTRAS) &&
-               !getToken().getTipo().getNombre().equals(TipoToken.FINREPITE)) {
-            sentencia();
-        }
-    }
-
-    private void sentencia() throws SyntaxException {
-        String tipoActual = getToken().getTipo().getNombre();
+    private void clase() throws SyntaxException {
+        String accessMod = "";
         
-        if (tipoActual.equals(TipoToken.LEER)) {
-            sentenciaLeer();
-        } else if (tipoActual.equals(TipoToken.ESCRIBIR)) {
-            sentenciaEscribir();
-        } else if (tipoActual.equals(TipoToken.SI)) {
-            sentenciaIf();
-        } else if (tipoActual.equals(TipoToken.MIENTRAS)) {
-            sentenciaMientras();
-        } else if (tipoActual.equals(TipoToken.REPITE)) {
-            sentenciaRepite();
-        } else if (tipoActual.equals(TipoToken.VARIABLE)) {
-            sentenciaAsignacion();
-        } else {
-            throw new SyntaxException("Sentencia no reconocida: " + getToken().getNombre());
+        // ⋆˖⁺‧₊☽⛥Detectar modificador de acceso opcional para la clase⛥☾₊‧⁺˖⋆ //
+        if (getToken().getTipo().getNombre().equals(TipoToken.PUBLIC)) {
+            accessMod = "public";
+            expect(TipoToken.PUBLIC);
+        } else if (getToken().getTipo().getNombre().equals(TipoToken.PRIVATE)) {
+            accessMod = "private";
+            expect(TipoToken.PRIVATE);
+        } else if (getToken().getTipo().getNombre().equals(TipoToken.PROTECTED)) {
+            accessMod = "protected";
+            expect(TipoToken.PROTECTED);
         }
-    }
 
-    private void sentenciaAsignacion() throws SyntaxException {
-        int indiceAux = indiceToken;
-        String varName = getToken().getNombre();
-        registrarVariable(varName);
+        expect(TipoToken.CLASS);
+        
+        String className = getToken().getNombre();
         expect(TipoToken.VARIABLE);
-        expect(TipoToken.IGUAL);
-        expresion();
-        
-        generador.crearTuplaAsignacion(indiceAux, indiceToken); 
-    }
 
-    private void sentenciaLeer() throws SyntaxException {
-        int indiceAux = indiceToken;
-        expect(TipoToken.LEER);
-        String varName = getToken().getNombre();
-        registrarVariable(varName);
-        expect(TipoToken.VARIABLE);
-        generador.crearTuplaLeer(indiceAux + 1);
-    }
-
-    private void sentenciaEscribir() throws SyntaxException {
-        int indiceAux = indiceToken;
-        expect(TipoToken.ESCRIBIR);
-        do {
-            if (getToken().getTipo().getNombre().equals(TipoToken.CADENA)) {
-                expect(TipoToken.CADENA);
-            } else if (getToken().getTipo().getNombre().equals(TipoToken.VARIABLE)) {
-                String varName = getToken().getNombre();
-                registrarVariable(varName);
-                expect(TipoToken.VARIABLE);
-            }
-        } while (match(TipoToken.COMA));
-        
-        generador.crearTuplaEscribir(indiceAux + 1, indiceToken);
-    }
-
-    private void sentenciaIf() throws SyntaxException {
-        expect(TipoToken.SI);
-        int indiceTupla = generador.getTuplas().size();
-        
-        condicion();
-        expect(TipoToken.ENTONCES);
-        sentencias();
-        expect(TipoToken.FINSI);
-        
-        generador.conectarSi(indiceTupla);
-    }
-
-    private void sentenciaMientras() throws SyntaxException {
-        expect(TipoToken.MIENTRAS);
-        int indiceTupla = generador.getTuplas().size();
-        
-        expect(TipoToken.PARENTESISIZQ);
-        condicion();
-        expect(TipoToken.PARENTESISDER);
-        
-        sentencias();
-        expect(TipoToken.FINMIENTRAS);
-        
-        generador.conectarMientras(indiceTupla);
-    }
-
-    private void sentenciaRepite() throws SyntaxException {
-        expect(TipoToken.REPITE);
-        expect(TipoToken.PARENTESISIZQ);
-        Token variableIndice = getToken();
-        registrarVariable(variableIndice.getNombre());
-        expect(TipoToken.VARIABLE);
-        expect(TipoToken.COMA);
-        Token valorInicial = getToken();
-        avanzarValor();
-        expect(TipoToken.COMA);
-        Token valorFinal = getToken();
-        avanzarValor();
-        expect(TipoToken.PARENTESISDER);
-
-        // Inicializacion
-        generador.getTuplas().add(new Asignacion(variableIndice, valorInicial, generador.getTuplas().size() + 2, generador.getTuplas().size() + 2));
-        
-        // Comparacion
-        int indiceTuplaComparacion = generador.getTuplas().size();
-        Token opMenorIgual = new Token(new TipoToken(TipoToken.OPRELACIONAL, "<="), "<=");
-        generador.getTuplas().add(new Comparacion(variableIndice, opMenorIgual, valorFinal, generador.getTuplas().size() + 2, generador.getTuplas().size() + 2));
-
-        sentencias();
-
-        // Incremento
-        Token opSuma = new Token(new TipoToken(TipoToken.OPARITMETICO, "+"), "+");
-        Token numUno = new Token(new TipoToken(TipoToken.NUMERO, "1"), "1");
-        generador.getTuplas().add(new Asignacion(variableIndice, variableIndice, opSuma, numUno, generador.getTuplas().size() + 2, generador.getTuplas().size() + 2));
-
-        expect(TipoToken.FINREPITE);
-        generador.conectarMientras(indiceTuplaComparacion);
-    }
-
-    private void condicion() throws SyntaxException {
-        int indiceAux = indiceToken;
-        avanzarValor();
-        expect(TipoToken.OPRELACIONAL);
-        avanzarValor();
-        generador.crearTuplaComparacion(indiceAux);
-    }
-
-    private void expresion() throws SyntaxException {
-        termino();
-        while (getToken().getTipo().getNombre().equals(TipoToken.OPARITMETICO) && 
-              (getToken().getNombre().equals("+") || getToken().getNombre().equals("-"))) {
-            expect(TipoToken.OPARITMETICO);
-            termino();
-        }
-    }
-
-    private void termino() throws SyntaxException {
-        factor();
-        while (getToken().getTipo().getNombre().equals(TipoToken.OPARITMETICO) && 
-              (getToken().getNombre().equals("*") || getToken().getNombre().equals("/"))) {
-            expect(TipoToken.OPARITMETICO);
-            factor();
-        }
-    }
-
-    private void factor() throws SyntaxException {
-        if (match(TipoToken.PARENTESISIZQ)) {
-            expresion();
-            expect(TipoToken.PARENTESISDER);
-        } else {
-            avanzarValor();
-        }
-    }
-
-    private void avanzarValor() throws SyntaxException {
-        if (getToken().getTipo().getNombre().equals(TipoToken.VARIABLE)) {
-            registrarVariable(getToken().getNombre());
+        ClassSymbol superClass = null;
+        if (match(TipoToken.EXTENDS)) {
+            String superClassName = getToken().getNombre();
             expect(TipoToken.VARIABLE);
-        } else if (getToken().getTipo().getNombre().equals(TipoToken.NUMERO)) {
-            expect(TipoToken.NUMERO);
-        } else {
-            throw new SyntaxException("Se esperaba VARIABLE o NUMERO");
+            
+            // ⋆˖⁺‧₊☽⛥Registra dinamicamente la superclase en la tabla global para soportar herencia⛥☾₊‧⁺˖⋆ //
+            Symbol resolved = symbolTable.resolve(superClassName);
+            if (resolved instanceof ClassSymbol) {
+                superClass = (ClassSymbol) resolved;
+            } else {
+                superClass = new ClassSymbol(superClassName, symbolTable, null);
+                symbolTable.define(superClass);
+            }
         }
+
+        ClassSymbol classSym = new ClassSymbol(className, currentScope, superClass);
+        classSym.setAccessModifier(accessMod);
+        currentScope.define(classSym);
+        
+        // ⋆˖⁺‧₊☽⛥Establece el ambito actual dentro de la clase⛥☾₊‧⁺˖⋆ //
+        Scope saveScope = currentScope;
+        currentScope = classSym;
+
+        expect(TipoToken.LLAVEIZQ);
+        while (indiceToken < tokens.size() && !getToken().getTipo().getNombre().equals(TipoToken.LLAVEDER)) {
+            miembro();
+        }
+        expect(TipoToken.LLAVEDER);
+
+        currentScope = saveScope;
     }
 
-    /*
-    private void verificarVariable(String varName) {
-        if (symbolTable.resolve(varName) == null) {
-            errors.add("Error semantico: Variable no declarada '" + varName + "'");
+    private void miembro() throws SyntaxException {
+        String accessMod = "";
+        
+        // ⋆˖⁺‧₊☽⛥Detecta el modificador de acceso del miembro de la clase⛥☾₊‧⁺˖⋆ //
+        if (getToken().getTipo().getNombre().equals(TipoToken.PUBLIC)) {
+            accessMod = "public";
+            expect(TipoToken.PUBLIC);
+        } else if (getToken().getTipo().getNombre().equals(TipoToken.PRIVATE)) {
+            accessMod = "private";
+            expect(TipoToken.PRIVATE);
+        } else if (getToken().getTipo().getNombre().equals(TipoToken.PROTECTED)) {
+            accessMod = "protected";
+            expect(TipoToken.PROTECTED);
         }
-    }
 
-    private void verificarSiEsVariable(String tokenName) {
+        String typeName = getToken().getNombre();
         if (getToken().getTipo().getNombre().equals(TipoToken.VARIABLE)) {
-            verificarVariable(tokenName);
+            expect(TipoToken.VARIABLE);
+        } else {
+            expect(getToken().getTipo().getNombre());
+        }
+
+        String memberName = getToken().getNombre();
+        expect(TipoToken.VARIABLE);
+
+        // ⋆˖⁺‧₊☽⛥Identificar si se trata de un metodo o un atributo de la clase⛥☾₊‧⁺˖⋆ //
+        if (getToken().getTipo().getNombre().equals(TipoToken.PARENTESISIZQ)) {
+            expect(TipoToken.PARENTESISIZQ);
+            
+            List<VariableSymbol> params = new ArrayList<>();
+            if (!getToken().getTipo().getNombre().equals(TipoToken.PARENTESISDER)) {
+                do {
+                    String pTypeName = getToken().getNombre();
+                    expect(TipoToken.VARIABLE);
+                    String pName = getToken().getNombre();
+                    expect(TipoToken.VARIABLE);
+                    
+                    Type pType = (Type) symbolTable.resolve(pTypeName);
+                    if (pType == null) {
+                        pType = new BuiltInTypeSymbol(pTypeName);
+                        symbolTable.define((Symbol) pType);
+                    }
+                    params.add(new VariableSymbol(pName, pType));
+                } while (match(TipoToken.COMA));
+            }
+            expect(TipoToken.PARENTESISDER);
+
+            VariableSymbol[] paramsArray = params.toArray(new VariableSymbol[0]);
+            MethodSymbol methodSym = new MethodSymbol(memberName, paramsArray, currentScope);
+            methodSym.setAccessModifier(accessMod);
+            
+            Type retType = (Type) symbolTable.resolve(typeName);
+            if (retType == null) {
+                retType = new BuiltInTypeSymbol(typeName);
+                symbolTable.define((Symbol) retType);
+            }
+            methodSym.setType(retType);
+
+            currentScope.define(methodSym);
+
+            consumirCuerpoMetodo();
+        } else {
+            Type attrType = (Type) symbolTable.resolve(typeName);
+            if (attrType == null) {
+                attrType = new BuiltInTypeSymbol(typeName);
+                symbolTable.define((Symbol) attrType);
+            }
+            VariableSymbol varSym = new VariableSymbol(memberName, attrType);
+            varSym.setAccessModifier(accessMod);
+            currentScope.define(varSym);
+
+            if (match(TipoToken.IGUAL)) {
+                while (indiceToken < tokens.size() && !getToken().getTipo().getNombre().equals(TipoToken.PUNTOYCOMA)) {
+                    indiceToken++;
+                }
+            }
+            expect(TipoToken.PUNTOYCOMA);
         }
     }
-    */
 }
-

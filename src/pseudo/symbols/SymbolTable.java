@@ -15,6 +15,12 @@ public class SymbolTable implements Scope
     {
         define(new BuiltInTypeSymbol("int"));
         define(new BuiltInTypeSymbol("float"));
+        
+        // ⋆˖⁺‧₊☽⛥Tipos de datos comunes en Java⛥☾₊‧⁺˖⋆ //
+        define(new BuiltInTypeSymbol("double"));
+        define(new BuiltInTypeSymbol("boolean"));
+        define(new BuiltInTypeSymbol("String"));
+        define(new BuiltInTypeSymbol("void"));
     }
     
     public String getScopeName() 
@@ -42,6 +48,11 @@ public class SymbolTable implements Scope
         return null;
     }
     
+    // ⋆˖⁺‧₊☽⛥Retorna el mapa de todos los simbolos registrados en el ambito global⛥☾₊‧⁺˖⋆ //
+    public Map<String, Symbol> getSymbols() {
+        return symbols;
+    }
+
     public String toString() 
     { 
         return getScopeName() + ":" + symbols; 
