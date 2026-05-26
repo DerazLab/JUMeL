@@ -67,93 +67,72 @@ public class JavaToMermaidTranslator {
 
         List<ClassSymbol> clases = obtenerClases(ts);
 
-        // ⋆˖⁺‧₊☽⛥Generar relaciones de Herencia, Implementacion y Composicion primero⛥☾₊‧⁺˖⋆ //
+        // ⋆˖⁺‧₊☽⛥Generar relaciones de Herencia, Realizacion y Composicion primero⛥☾₊‧⁺˖⋆ //
         for (ClassSymbol cls : clases) {
-            String sanClsName = sanitizar(cls.getName());
             if (cls.getParentScope() instanceof ClassSymbol) {
-                sb.append("    ").append(sanitizar(((ClassSymbol) cls.getParentScope()).getName()))
-                  .append(" <|-- ").append(sanClsName).append("\n");
+                sb.append("    ").append(((ClassSymbol) cls.getParentScope()).getName())
+                  .append(" <|-- ").append(cls.getName()).append("\n");
             }
-
+            
+            // Realizaciones de Interfaces en UML (Flecha discontinua <|..)
             for (ClassSymbol iface : cls.getImplementedInterfaces()) {
-                sb.append("    ").append(sanitizar(iface.getName()))
-                  .append(" <|.. ").append(sanClsName).append("\n");
+                sb.append("    ").append(iface.getName())
+                  .append(" <|.. ").append(cls.getName()).append("\n");
             }
 
             for (Symbol member : cls.getMembers().values()) {
                 if (member instanceof VariableSymbol) {
                     Type t = member.getType();
-                    if (t != null) {
-                        String typeName = t.getName();
-                        // ⋆˖⁺‧₊☽⛥Si es un arreglo (ej. PaqueteDatos[]), removemos los corchetes para detectar la relacion⛥☾₊‧⁺˖⋆ //
-                        if (typeName.endsWith("[]")) {
-                            typeName = typeName.substring(0, typeName.length() - 2);
-                        }
-                        
-                        Symbol resolved = ts.resolve(typeName);
+                    if (t instanceof ClassSymbol) {
+                        sb.append("    ").append(cls.getName())
+                          .append(" *-- ").append(((ClassSymbol) t).getName()).append("\n");
+                    } else if (t != null) {
+                        // Si el tipo es el nombre de alguna clase registrada en la tabla
+                        Symbol resolved = ts.resolve(t.getName());
                         if (resolved instanceof ClassSymbol) {
-                            sb.append("    ").append(sanClsName)
-                              .append(" *-- ").append(sanitizar(resolved.getName())).append("\n");
+                            sb.append("    ").append(cls.getName())
+                              .append(" *-- ").append(resolved.getName()).append("\n");
                         }
                     }
                 }
             }
         }
 
-        // ⋆˖⁺‧₊☽⛥Generar las definiciones de clases con sus miembros, estereotipos y modificadores static⛥☾₊‧⁺˖⋆ //
+        // ⋆˖⁺‧₊☽⛥Generar las definiciones de clases con sus miembros y estereotipos⛥☾₊‧⁺˖⋆ //
         for (ClassSymbol cls : clases) {
-            String sanClsName = sanitizar(cls.getName());
-            sb.append("    class ").append(sanClsName).append(" {\n");
-
+            sb.append("    class ").append(cls.getName()).append(" {\n");
+            
             if (cls.isInterface()) {
-                sb.append("        <<Interfaz>>\n");
+                sb.append("        <<interface>>\n");
             } else if (cls.isAbstract()) {
-                sb.append("        <<Abstracta>>\n");
+                sb.append("        <<abstract>>\n");
             }
 
             for (Symbol member : cls.getMembers().values()) {
                 String prefix = obtenerPrefijo(member.getAccessModifier());
-                String staticSuffix = member.isStatic() ? "$" : "";
-                String sanMemberName = sanitizar(member.getName());
-                
                 if (member instanceof VariableSymbol) {
                     sb.append("        ").append(prefix)
-                      .append(member.getType() != null ? sanitizar(member.getType().getName()) : "Object")
-                      .append(" ").append(sanMemberName).append(staticSuffix).append("\n");
+                      .append(member.getType() != null ? member.getType().getName() : "Object")
+                      .append(" ").append(member.getName()).append("\n");
                 } else if (member instanceof MethodSymbol) {
                     MethodSymbol method = (MethodSymbol) member;
-                    sb.append("        ").append(prefix).append(sanitizar(method.getName())).append("(");
+                    sb.append("        ").append(prefix).append(method.getName()).append("(");
                     
+                    // Parametros del metodo
                     List<String> pList = new ArrayList<>();
                     for (Symbol p : method.getMembers().values()) {
-                        pList.add((p.getType() != null ? sanitizar(p.getType().getName()) : "Object") + " " + sanitizar(p.getName()));
+                        pList.add((p.getType() != null ? p.getType().getName() : "Object") + " " + p.getName());
                     }
+                    // Invertir o respetar orden si es necesario, o unirlos directamente
                     sb.append(String.join(", ", pList));
                     
-                    sb.append(") ").append(method.getType() != null ? sanitizar(method.getType().getName()) : "void").append(staticSuffix).append("\n");
+                    sb.append(") ").append(method.getType() != null ? method.getType().getName() : "void").append("\n");
                 }
             }
             sb.append("    }\n");
         }
 
         return sb.toString();
-    }
-
-    private static String sanitizar(String text) {
-        if (text == null) return "";
-        return text.replace("ñ", "n")
-                   .replace("Ñ", "N")
-                   .replace("á", "a")
-                   .replace("é", "e")
-                   .replace("í", "i")
-                   .replace("ó", "o")
-                   .replace("ú", "u")
-                   .replace("Á", "A")
-                   .replace("É", "E")
-                   .replace("Í", "I")
-                   .replace("Ó", "O")
-                   .replace("Ú", "U")
-                   .replace("[]", "_Array");
     }
 
     private static String obtenerPrefijo(String mod) {

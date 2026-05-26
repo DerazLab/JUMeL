@@ -1,55 +1,68 @@
-// ⋆˖⁺‧₊☽⛥Interfaz para probar relaciones de realizacion/implementacion⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥Clase base para probar herencia de clases⛥☾₊‧⁺˖⋆ //
+public class Persona {
+    private String curp;
+    protected String fechaNacimiento;
+
+    public void mostrarDatos() {
+        System.out.println("CURP: " + curp);
+    }
+}
+
+// ⋆˖⁺‧₊☽⛥Clase para probar relacion de composicion⛥☾₊‧⁺˖⋆ //
+public class Direccion {
+    public String calle;
+    private int numero;
+}
+
+// ⋆˖⁺‧₊☽⛥Clase principal que hereda de Persona y contiene Direccion⛥☾₊‧⁺˖⋆ //
+public class Estudiante extends Persona {
+    private int matricula;
+    public String nombre;
+
+    // Composicion/Agregacion con Direccion
+    public Direccion domicilio;
+
+    public void estudiar() {
+        if (matricula > 0) {
+            System.out.println(nombre + " esta estudiando.");
+        }
+    }
+}
+
+// ⋆˖⁺‧₊☽⛥Interfaz para probar realizacion/implementacion y estereotipo <<interface>>⛥☾₊‧⁺˖⋆ //
 public interface IProtocolo {
     public void enrutarDatos();
 }
 
-// ⋆˖⁺‧₊☽⛥Clase abstracta para probar herencia profunda y metodos sin
-// cuerpo⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥Clase abstracta para probar herencia y estereotipo <<abstract>>⛥☾₊‧⁺˖⋆ //
 public abstract class NodoRed {
     protected String direccionIP;
     public int anchoBanda;
 
     public void establecerConexion() {
-        System.out.println("Conectando nodo a la red...");
+        System.out.println("Conectando a la red...");
     }
 
     public abstract void transmitir();
 }
 
-// ⋆˖⁺‧₊☽⛥Clase para probar relacion de agregacion y multiplicidad⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥Clase de soporte para composicion⛥☾₊‧⁺˖⋆ //
 public class PaqueteDatos {
     private String payload;
-    public int tamañoBits;
-
-    public void encriptar() {
-        // Simulando encriptacion con llaves internas
-        if (tamañoBits > 0) {
-            this.payload = "[ENCRYPTED_DATA]";
-        }
-    }
 }
 
-// ⋆˖⁺‧₊☽⛥Clase compleja: hereda de abstracta, implementa interfaz y compone un
-// arreglo⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥Clase compleja que hereda, implementa y compone⛥☾₊‧⁺˖⋆ //
 public class ServidorWired extends NodoRed implements IProtocolo {
     private String hostName;
-
-    // Intranet definida estrictamente por el rango de acceso, no por el prefijo IP
-    protected int rangoAccesoIntranet;
-
-    // Atributo estatico para probar el subrayado en UML
-    private static int limiteConexiones = 99;
-
-    // Agregacion: Un servidor contiene multiples paquetes de datos
-    public PaqueteDatos[] colaMensajes;
+    
+    // Composicion/Agregacion con PaqueteDatos
+    public PaqueteDatos colaMensajes;
 
     public void enrutarDatos() {
-        if (colaMensajes != null && rangoAccesoIntranet > 0) {
-            System.out.println("Enrutando paquetes en el servidor " + hostName);
-        }
+        System.out.println("Enrutando datos...");
     }
 
     public void transmitir() {
-        System.out.println("Transmision activa en The Wired.");
+        System.out.println("Transmitiendo paquetes...");
     }
 }

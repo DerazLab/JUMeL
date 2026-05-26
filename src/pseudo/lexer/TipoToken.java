@@ -55,12 +55,10 @@ public class TipoToken
     public static String LLAVEDER = "LLAVEDER";
     public static String PUNTOYCOMA = "PUNTOYCOMA";
     
+    // ⋆˖⁺‧₊☽⛥Tokens para interfaces y clases abstractas⛥☾₊‧⁺˖⋆ //
     public static String INTERFACE = "INTERFACE";
-    public static String ABSTRACT = "ABSTRACT";
     public static String IMPLEMENTS = "IMPLEMENTS";
-    public static String STATIC = "STATIC";
-    public static String CORCHETEIZQ = "CORCHETEIZQ";
-    public static String CORCHETEDER = "CORCHETEDER";
+    public static String ABSTRACT = "ABSTRACT";
 }
 
 

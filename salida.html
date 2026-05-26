@@ -75,29 +75,42 @@ classDiagram
     NodoRed <|-- ServidorWired
     IProtocolo <|.. ServidorWired
     ServidorWired *-- PaqueteDatos
+    Persona <|-- Estudiante
+    Estudiante *-- Direccion
     class NodoRed {
-        <<Abstracta>>
+        <<abstract>>
         #String direccionIP
         +int anchoBanda
         +establecerConexion() void
         +transmitir() void
     }
-    class IProtocolo {
-        <<Interfaz>>
-        +enrutarDatos() void
+    class Persona {
+        -String curp
+        #String fechaNacimiento
+        +mostrarDatos() void
     }
-    class PaqueteDatos {
-        -String payload
-        +int tamanoBits
-        +encriptar() void
+    class IProtocolo {
+        <<interface>>
+        +enrutarDatos() void
     }
     class ServidorWired {
         -String hostName
-        #int rangoAccesoIntranet
-        -int limiteConexiones$
-        +PaqueteDatos_Array colaMensajes
+        +PaqueteDatos colaMensajes
         +enrutarDatos() void
         +transmitir() void
+    }
+    class Estudiante {
+        -int matricula
+        +String nombre
+        +Direccion domicilio
+        +estudiar() void
+    }
+    class PaqueteDatos {
+        -String payload
+    }
+    class Direccion {
+        +String calle
+        -int numero
     }
 
             </pre>

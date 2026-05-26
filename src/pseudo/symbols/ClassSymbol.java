@@ -7,39 +7,23 @@ public class ClassSymbol extends ScopedSymbol implements Scope, Type {
     ClassSymbol superClass;
     public Map<String, Symbol> members = new LinkedHashMap<String, Symbol>();
     
-    // ⋆˖⁺‧₊☽⛥Campos para registrar si es una interfaz, clase abstracta y las interfaces que implementa⛥☾₊‧⁺˖⋆ //
+    // ⋆˖⁺‧₊☽⛥Propiedades para modelar clases abstractas e interfaces⛥☾₊‧⁺˖⋆ //
     private boolean isInterface = false;
     private boolean isAbstract = false;
-    private java.util.List<ClassSymbol> implementedInterfaces = new java.util.ArrayList<ClassSymbol>();
+    private java.util.List<ClassSymbol> implementedInterfaces = new java.util.ArrayList<>();
 
     public ClassSymbol(String name, Scope enclosingScope, ClassSymbol superClass) {
         super(name, enclosingScope);
         this.superClass = superClass;
     }
 
-    public boolean isInterface() {
-        return isInterface;
-    }
+    public boolean isInterface() { return isInterface; }
+    public void setInterface(boolean isInterface) { this.isInterface = isInterface; }
 
-    public void setInterface(boolean isInterface) {
-        this.isInterface = isInterface;
-    }
+    public boolean isAbstract() { return isAbstract; }
+    public void setAbstract(boolean isAbstract) { this.isAbstract = isAbstract; }
 
-    public boolean isAbstract() {
-        return isAbstract;
-    }
-
-    public void setAbstract(boolean isAbstract) {
-        this.isAbstract = isAbstract;
-    }
-
-    public java.util.List<ClassSymbol> getImplementedInterfaces() {
-        return implementedInterfaces;
-    }
-
-    public void addImplementedInterface(ClassSymbol iface) {
-        this.implementedInterfaces.add(iface);
-    }
+    public java.util.List<ClassSymbol> getImplementedInterfaces() { return implementedInterfaces; }
 
     public Scope getParentScope() {
         if (superClass == null)

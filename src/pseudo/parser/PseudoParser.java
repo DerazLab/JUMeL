@@ -6,7 +6,7 @@ import pseudo.lexer.*;
 import pseudo.symbols.*;
 import pseudo.exceptions.*;
 
-// •───⋅⋆⁺‧₊☽⛥ Analizador sintactico adaptado para Java con Interfaces y Clases Abstractas ⛦☾₊‧⁺⋆⋅───•
+// •───⋅⋆⁺‧₊☽⛥ Analizador sintactico adaptado para Java ⛦☾₊‧⁺⋆⋅───•
 public class PseudoParser {
     private ArrayList<Token> tokens;
     private int indiceToken = 0;
@@ -22,6 +22,7 @@ public class PseudoParser {
         this.errors = new ArrayList<>();
     }
 
+    // ⋆˖⁺‧₊☽⛥Constructor compatible con llamadas existentes⛥☾₊‧⁺˖⋆ //
     public PseudoParser(SymbolTable ts, Object generadorIgnorado) {
         this(ts);
     }
@@ -33,7 +34,7 @@ public class PseudoParser {
 
         if (tokens == null || tokens.isEmpty()) return;
 
-        // ⋆˖⁺‧₊☽⛥Analiza secuencialmente las clases e interfaces del archivo fuente de Java⛥☾₊‧⁺˖⋆ //
+        // ⋆˖⁺‧₊☽⛥Analiza secuencialmente las clases del archivo fuente de Java⛥☾₊‧⁺˖⋆ //
         while (indiceToken < tokens.size()) {
             clase();
         }
@@ -84,30 +85,25 @@ public class PseudoParser {
 
     private void clase() throws SyntaxException {
         String accessMod = "";
-        boolean isAbstract = false;
-        boolean isInterface = false;
-
-        // ⋆˖⁺‧₊☽⛥Consumir lista de modificadores en cualquier orden (public, abstract, etc)⛥☾₊‧⁺˖⋆ //
-        while (true) {
-            String tokenType = getToken().getTipo().getNombre();
-            if (tokenType.equals(TipoToken.PUBLIC)) {
-                accessMod = "public";
-                expect(TipoToken.PUBLIC);
-            } else if (tokenType.equals(TipoToken.PRIVATE)) {
-                accessMod = "private";
-                expect(TipoToken.PRIVATE);
-            } else if (tokenType.equals(TipoToken.PROTECTED)) {
-                accessMod = "protected";
-                expect(TipoToken.PROTECTED);
-            } else if (tokenType.equals(TipoToken.ABSTRACT)) {
-                isAbstract = true;
-                expect(TipoToken.ABSTRACT);
-            } else {
-                break;
-            }
+        
+        // ⋆˖⁺‧₊☽⛥Detectar modificador de acceso opcional para la clase⛥☾₊‧⁺˖⋆ //
+        if (getToken().getTipo().getNombre().equals(TipoToken.PUBLIC)) {
+            accessMod = "public";
+            expect(TipoToken.PUBLIC);
+        } else if (getToken().getTipo().getNombre().equals(TipoToken.PRIVATE)) {
+            accessMod = "private";
+            expect(TipoToken.PRIVATE);
+        } else if (getToken().getTipo().getNombre().equals(TipoToken.PROTECTED)) {
+            accessMod = "protected";
+            expect(TipoToken.PROTECTED);
         }
 
-        // ⋆˖⁺‧₊☽⛥Determinar si es una interfaz o una clase regular⛥☾₊‧⁺˖⋆ //
+        boolean isAbstract = false;
+        if (match(TipoToken.ABSTRACT)) {
+            isAbstract = true;
+        }
+
+        boolean isInterface = false;
         if (match(TipoToken.INTERFACE)) {
             isInterface = true;
         } else {
@@ -122,6 +118,7 @@ public class PseudoParser {
             String superClassName = getToken().getNombre();
             expect(TipoToken.VARIABLE);
             
+            // ⋆˖⁺‧₊☽⛥Registra dinamicamente la superclase en la tabla global para soportar herencia⛥☾₊‧⁺˖⋆ //
             Symbol resolved = symbolTable.resolve(superClassName);
             if (resolved instanceof ClassSymbol) {
                 superClass = (ClassSymbol) resolved;
@@ -131,32 +128,34 @@ public class PseudoParser {
             }
         }
 
+        List<ClassSymbol> implInterfaces = new ArrayList<>();
+        if (match(TipoToken.IMPLEMENTS)) {
+            do {
+                String interfaceName = getToken().getNombre();
+                expect(TipoToken.VARIABLE);
+                
+                Symbol resolved = symbolTable.resolve(interfaceName);
+                ClassSymbol interfaceSym;
+                if (resolved instanceof ClassSymbol) {
+                    interfaceSym = (ClassSymbol) resolved;
+                } else {
+                    interfaceSym = new ClassSymbol(interfaceName, symbolTable, null);
+                    interfaceSym.setInterface(true);
+                    symbolTable.define(interfaceSym);
+                }
+                implInterfaces.add(interfaceSym);
+            } while (match(TipoToken.COMA));
+        }
+
         ClassSymbol classSym = new ClassSymbol(className, currentScope, superClass);
         classSym.setAccessModifier(accessMod);
         classSym.setAbstract(isAbstract);
         classSym.setInterface(isInterface);
+        classSym.getImplementedInterfaces().addAll(implInterfaces);
+        
         currentScope.define(classSym);
         
-        // ⋆˖⁺‧₊☽⛥Manejo de implements para interfaces⛥☾₊‧⁺˖⋆ //
-        if (match(TipoToken.IMPLEMENTS)) {
-            do {
-                String ifaceName = getToken().getNombre();
-                expect(TipoToken.VARIABLE);
-                
-                Symbol resolved = symbolTable.resolve(ifaceName);
-                ClassSymbol ifaceSymbol;
-                if (resolved instanceof ClassSymbol) {
-                    ifaceSymbol = (ClassSymbol) resolved;
-                } else {
-                    ifaceSymbol = new ClassSymbol(ifaceName, symbolTable, null);
-                    ifaceSymbol.setInterface(true);
-                    symbolTable.define(ifaceSymbol);
-                }
-                classSym.addImplementedInterface(ifaceSymbol);
-            } while (match(TipoToken.COMA));
-        }
-
-        // ⋆˖⁺‧₊☽⛥Establece el ambito actual dentro de la clase/interfaz⛥☾₊‧⁺˖⋆ //
+        // ⋆˖⁺‧₊☽⛥Establece el ambito actual dentro de la clase⛥☾₊‧⁺˖⋆ //
         Scope saveScope = currentScope;
         currentScope = classSym;
 
@@ -171,49 +170,48 @@ public class PseudoParser {
 
     private void miembro() throws SyntaxException {
         String accessMod = "";
-        boolean isStatic = false;
-        boolean isAbstract = false;
+        
+        // ⋆˖⁺‧₊☽⛥Detecta el modificador de acceso del miembro de la clase⛥☾₊‧⁺˖⋆ //
+        if (getToken().getTipo().getNombre().equals(TipoToken.PUBLIC)) {
+            accessMod = "public";
+            expect(TipoToken.PUBLIC);
+        } else if (getToken().getTipo().getNombre().equals(TipoToken.PRIVATE)) {
+            accessMod = "private";
+            expect(TipoToken.PRIVATE);
+        } else if (getToken().getTipo().getNombre().equals(TipoToken.PROTECTED)) {
+            accessMod = "protected";
+            expect(TipoToken.PROTECTED);
+        }
 
-        // ⋆˖⁺‧₊☽⛥Consumir modificadores del miembro (public, static, abstract)⛥☾₊‧⁺˖⋆ //
-        while (true) {
-            String tokenType = getToken().getTipo().getNombre();
-            if (tokenType.equals(TipoToken.PUBLIC)) {
-                accessMod = "public";
-                expect(TipoToken.PUBLIC);
-            } else if (tokenType.equals(TipoToken.PRIVATE)) {
-                accessMod = "private";
-                expect(TipoToken.PRIVATE);
-            } else if (tokenType.equals(TipoToken.PROTECTED)) {
-                accessMod = "protected";
-                expect(TipoToken.PROTECTED);
-            } else if (tokenType.equals(TipoToken.STATIC)) {
-                isStatic = true;
-                expect(TipoToken.STATIC);
-            } else if (tokenType.equals(TipoToken.ABSTRACT)) {
-                isAbstract = true;
+        // ⋆˖⁺‧₊☽⛥Ignora modificadores adicionales como abstract, static y final⛥☾₊‧⁺˖⋆ //
+        while (getToken().getTipo().getNombre().equals(TipoToken.ABSTRACT) || 
+               (getToken().getTipo().getNombre().equals(TipoToken.VARIABLE) && 
+                (getToken().getNombre().equals("static") || getToken().getNombre().equals("final")))) {
+            if (getToken().getTipo().getNombre().equals(TipoToken.ABSTRACT)) {
                 expect(TipoToken.ABSTRACT);
             } else {
-                break;
+                expect(TipoToken.VARIABLE);
             }
         }
 
-        // ⋆˖⁺‧₊☽⛥Leer tipo de dato y dar soporte a arreglos (ej. PaqueteDatos[])⛥☾₊‧⁺˖⋆ //
         String typeName = getToken().getNombre();
         if (getToken().getTipo().getNombre().equals(TipoToken.VARIABLE)) {
             expect(TipoToken.VARIABLE);
         } else {
             expect(getToken().getTipo().getNombre());
         }
-        
-        while (match(TipoToken.CORCHETEIZQ)) {
-            expect(TipoToken.CORCHETEDER);
-            typeName += "[]";
+
+        // ⋆˖⁺‧₊☽⛥Soporte para tipos array como PaqueteDatos[]⛥☾₊‧⁺˖⋆ //
+        while (getToken().getTipo().getNombre().equals(TipoToken.ERROR) && 
+               (getToken().getNombre().equals("[") || getToken().getNombre().equals("]"))) {
+            typeName += getToken().getNombre();
+            indiceToken++;
         }
 
         String memberName = getToken().getNombre();
         expect(TipoToken.VARIABLE);
 
-        // ⋆˖⁺‧₊☽⛥Identificar si se trata de un metodo o un atributo⛥☾₊‧⁺˖⋆ //
+        // ⋆˖⁺‧₊☽⛥Identificar si se trata de un metodo o un atributo de la clase⛥☾₊‧⁺˖⋆ //
         if (getToken().getTipo().getNombre().equals(TipoToken.PARENTESISIZQ)) {
             expect(TipoToken.PARENTESISIZQ);
             
@@ -223,11 +221,13 @@ public class PseudoParser {
                     String pTypeName = getToken().getNombre();
                     expect(TipoToken.VARIABLE);
                     
-                    while (match(TipoToken.CORCHETEIZQ)) {
-                        expect(TipoToken.CORCHETEDER);
-                        pTypeName += "[]";
+                    // ⋆˖⁺‧₊☽⛥Soporte para tipos array en parametros como PaqueteDatos[]⛥☾₊‧⁺˖⋆ //
+                    while (getToken().getTipo().getNombre().equals(TipoToken.ERROR) && 
+                           (getToken().getNombre().equals("[") || getToken().getNombre().equals("]"))) {
+                        pTypeName += getToken().getNombre();
+                        indiceToken++;
                     }
-                    
+
                     String pName = getToken().getNombre();
                     expect(TipoToken.VARIABLE);
                     
@@ -244,7 +244,6 @@ public class PseudoParser {
             VariableSymbol[] paramsArray = params.toArray(new VariableSymbol[0]);
             MethodSymbol methodSym = new MethodSymbol(memberName, paramsArray, currentScope);
             methodSym.setAccessModifier(accessMod);
-            methodSym.setStatic(isStatic);
             
             Type retType = (Type) symbolTable.resolve(typeName);
             if (retType == null) {
@@ -264,7 +263,6 @@ public class PseudoParser {
             }
             VariableSymbol varSym = new VariableSymbol(memberName, attrType);
             varSym.setAccessModifier(accessMod);
-            varSym.setStatic(isStatic);
             currentScope.define(varSym);
 
             if (match(TipoToken.IGUAL)) {
