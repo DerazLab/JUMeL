@@ -88,14 +88,14 @@ classDiagram
     }
     class PaqueteDatos {
         -String payload
-        +int tamañoBits
+        +int tamanoBits
         +encriptar() void
     }
     class ServidorWired {
         -String hostName
         #int rangoAccesoIntranet
         -int limiteConexiones$
-        +PaqueteDatos[] colaMensajes
+        +PaqueteDatos_Array colaMensajes
         +enrutarDatos() void
         +transmitir() void
     }

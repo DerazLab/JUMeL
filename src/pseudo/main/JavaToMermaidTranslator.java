@@ -69,14 +69,15 @@ public class JavaToMermaidTranslator {
 
         // ⋆˖⁺‧₊☽⛥Generar relaciones de Herencia, Implementacion y Composicion primero⛥☾₊‧⁺˖⋆ //
         for (ClassSymbol cls : clases) {
+            String sanClsName = sanitizar(cls.getName());
             if (cls.getParentScope() instanceof ClassSymbol) {
-                sb.append("    ").append(((ClassSymbol) cls.getParentScope()).getName())
-                  .append(" <|-- ").append(cls.getName()).append("\n");
+                sb.append("    ").append(sanitizar(((ClassSymbol) cls.getParentScope()).getName()))
+                  .append(" <|-- ").append(sanClsName).append("\n");
             }
 
             for (ClassSymbol iface : cls.getImplementedInterfaces()) {
-                sb.append("    ").append(iface.getName())
-                  .append(" <|.. ").append(cls.getName()).append("\n");
+                sb.append("    ").append(sanitizar(iface.getName()))
+                  .append(" <|.. ").append(sanClsName).append("\n");
             }
 
             for (Symbol member : cls.getMembers().values()) {
@@ -91,8 +92,8 @@ public class JavaToMermaidTranslator {
                         
                         Symbol resolved = ts.resolve(typeName);
                         if (resolved instanceof ClassSymbol) {
-                            sb.append("    ").append(cls.getName())
-                              .append(" *-- ").append(resolved.getName()).append("\n");
+                            sb.append("    ").append(sanClsName)
+                              .append(" *-- ").append(sanitizar(resolved.getName())).append("\n");
                         }
                     }
                 }
@@ -101,7 +102,8 @@ public class JavaToMermaidTranslator {
 
         // ⋆˖⁺‧₊☽⛥Generar las definiciones de clases con sus miembros, estereotipos y modificadores static⛥☾₊‧⁺˖⋆ //
         for (ClassSymbol cls : clases) {
-            sb.append("    class ").append(cls.getName()).append(" {\n");
+            String sanClsName = sanitizar(cls.getName());
+            sb.append("    class ").append(sanClsName).append(" {\n");
 
             if (cls.isInterface()) {
                 sb.append("        <<Interfaz>>\n");
@@ -112,28 +114,46 @@ public class JavaToMermaidTranslator {
             for (Symbol member : cls.getMembers().values()) {
                 String prefix = obtenerPrefijo(member.getAccessModifier());
                 String staticSuffix = member.isStatic() ? "$" : "";
+                String sanMemberName = sanitizar(member.getName());
                 
                 if (member instanceof VariableSymbol) {
                     sb.append("        ").append(prefix)
-                      .append(member.getType() != null ? member.getType().getName() : "Object")
-                      .append(" ").append(member.getName()).append(staticSuffix).append("\n");
+                      .append(member.getType() != null ? sanitizar(member.getType().getName()) : "Object")
+                      .append(" ").append(sanMemberName).append(staticSuffix).append("\n");
                 } else if (member instanceof MethodSymbol) {
                     MethodSymbol method = (MethodSymbol) member;
-                    sb.append("        ").append(prefix).append(method.getName()).append("(");
+                    sb.append("        ").append(prefix).append(sanitizar(method.getName())).append("(");
                     
                     List<String> pList = new ArrayList<>();
                     for (Symbol p : method.getMembers().values()) {
-                        pList.add((p.getType() != null ? p.getType().getName() : "Object") + " " + p.getName());
+                        pList.add((p.getType() != null ? sanitizar(p.getType().getName()) : "Object") + " " + sanitizar(p.getName()));
                     }
                     sb.append(String.join(", ", pList));
                     
-                    sb.append(") ").append(method.getType() != null ? method.getType().getName() : "void").append(staticSuffix).append("\n");
+                    sb.append(") ").append(method.getType() != null ? sanitizar(method.getType().getName()) : "void").append(staticSuffix).append("\n");
                 }
             }
             sb.append("    }\n");
         }
 
         return sb.toString();
+    }
+
+    private static String sanitizar(String text) {
+        if (text == null) return "";
+        return text.replace("ñ", "n")
+                   .replace("Ñ", "N")
+                   .replace("á", "a")
+                   .replace("é", "e")
+                   .replace("í", "i")
+                   .replace("ó", "o")
+                   .replace("ú", "u")
+                   .replace("Á", "A")
+                   .replace("É", "E")
+                   .replace("Í", "I")
+                   .replace("Ó", "O")
+                   .replace("Ú", "U")
+                   .replace("[]", "_Array");
     }
 
     private static String obtenerPrefijo(String mod) {
