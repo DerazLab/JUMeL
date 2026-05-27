@@ -68,7 +68,12 @@ Para cumplir rigurosamente con los principios de diseño de software moderno (**
 2. Contar con un archivo de código fuente de Java (ej. `Estudiante.java`) a analizar en el directorio del proyecto.
 
 ### Paso 2: Compilación del Proyecto
-Para compilar todas las clases del traductor, ejecuta el siguiente comando en la terminal desde la raíz del proyecto:
+Para compilar todas las clases de la herramienta de forma rápida y automática, ejecuta el siguiente comando en la terminal desde la raíz del proyecto:
+```bash
+javac -d bin -cp src src/pseudo/main/*.java
+```
+
+*(Opcional) Si deseas compilar especificando manualmente cada subpaquete:*
 ```bash
 javac -d bin -sourcepath src src/pseudo/lexer/*.java src/pseudo/parser/*.java src/pseudo/symbols/*.java src/pseudo/main/*.java src/pseudo/exceptions/*.java
 ```
