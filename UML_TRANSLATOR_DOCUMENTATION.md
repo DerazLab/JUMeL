@@ -73,11 +73,20 @@ Para compilar todas las clases del traductor, ejecuta el siguiente comando en la
 javac -d bin -sourcepath src src/pseudo/lexer/*.java src/pseudo/parser/*.java src/pseudo/symbols/*.java src/pseudo/main/*.java src/pseudo/exceptions/*.java
 ```
 
-### Paso 3: Ejecución de la Traducción
-Ejecuta la herramienta indicando la ruta del archivo `.java` que deseas procesar:
-```bash
-java -cp bin pseudo.main.JavaToMermaidTranslator ./Estudiante.java
-```
+### Paso 3: Ejecución de la Traducción (Soporte Multi-archivo y Directorios)
+Ejecuta la herramienta indicando la ruta de un archivo `.java`, una lista de archivos, o el directorio que deseas escanear recursivamente:
+
+* **Para procesar un solo archivo**:
+  ```bash
+  java -cp bin pseudo.main.JavaToMermaidTranslator ./Estudiante.java
+  ```
+
+* **Para procesar un directorio completo de forma recursiva**:
+  ```bash
+  java -cp bin pseudo.main.JavaToMermaidTranslator ./ruta/de/tu/proyecto
+  ```
+
+El sistema detectará automáticamente todos los archivos `.java`, acumulará sus clases y generará un único diagrama UML consolidado con todas las interconexiones detectadas entre clases de archivos distintos.
 
 ### Paso 4: Visualización del Diagrama UML
 1. El programa generará de forma automática un archivo llamado `salida.html` en la raíz del proyecto.

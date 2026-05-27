@@ -16,4 +16,30 @@ public class ProgramReader {
             return "";
         }
     }
+
+    public static java.util.List<String> obtenerArchivosJava(String rutaInicial) {
+        java.util.List<String> archivos = new java.util.ArrayList<>();
+        java.io.File archivoOCarpeta = new java.io.File(rutaInicial);
+        if (archivoOCarpeta.exists()) {
+            if (archivoOCarpeta.isFile() && archivoOCarpeta.getName().endsWith(".java")) {
+                archivos.add(archivoOCarpeta.getAbsolutePath());
+            } else if (archivoOCarpeta.isDirectory()) {
+                escanearDirectorio(archivoOCarpeta, archivos);
+            }
+        }
+        return archivos;
+    }
+
+    private static void escanearDirectorio(java.io.File carpeta, java.util.List<String> archivos) {
+        java.io.File[] lista = carpeta.listFiles();
+        if (lista != null) {
+            for (java.io.File f : lista) {
+                if (f.isFile() && f.getName().endsWith(".java")) {
+                    archivos.add(f.getAbsolutePath());
+                } else if (f.isDirectory()) {
+                    escanearDirectorio(f, archivos);
+                }
+            }
+        }
+    }
 }

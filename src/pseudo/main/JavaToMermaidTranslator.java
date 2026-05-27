@@ -13,30 +13,48 @@ public class JavaToMermaidTranslator {
         }
 
         try {
-            System.out.println("=== Iniciando Traductor de Java a UML (vía Mermaid JS) [SOLID-Architected] ===");
+            System.out.println("=== Iniciando Traductor de Java a UML (vía Mermaid JS) [SOLID-Architected & Multi-File] ===");
             
-            // ⋆˖⁺‧₊☽⛥Fase 1: Lectura de archivo (ProgramReader)⛥☾₊‧⁺˖⋆ //
-            String entrada = ProgramReader.leerPrograma(rutaArchivo);
-            if (entrada.isEmpty()) {
-                System.err.println("Error: No se pudo leer el archivo o el archivo esta vacio: " + rutaArchivo);
+            // ⋆˖⁺‧₊☽⛥Fase 1: Escaneo y lectura de archivos .java⛥☾₊‧⁺˖⋆ //
+            java.util.List<String> archivos = ProgramReader.obtenerArchivosJava(rutaArchivo);
+            if (archivos.isEmpty()) {
+                System.err.println("Error: No se encontraron archivos .java en la ruta especificada: " + rutaArchivo);
                 System.exit(1);
             }
 
-            // ⋆˖⁺‧₊☽⛥Fase 2: Análisis Léxico⛥☾₊‧⁺˖⋆ //
-            PseudoLexer lexer = new PseudoLexer();
-            lexer.analizar(entrada);
+            System.out.println("Se detectaron " + archivos.size() + " archivo(s) .java para procesar.");
 
-            // ⋆˖⁺‧₊☽⛥Fase 3: Análisis Sintáctico y Tabla de Símbolos⛥☾₊‧⁺˖⋆ //
+            // ⋆˖⁺‧₊☽⛥Fase 2: Análisis de símbolos acumulativos⛥☾₊‧⁺˖⋆ //
             SymbolTable ts = new SymbolTable();
-            PseudoParser parser = new PseudoParser(ts);
-            parser.analizar(lexer);
+            int procesados = 0;
 
-            // ⋆˖⁺‧₊☽⛥Fase 4: Generación de Código Mermaid (MermaidCodeGenerator)⛥☾₊‧⁺˖⋆ //
+            for (String archivo : archivos) {
+                String entrada = ProgramReader.leerPrograma(archivo);
+                if (entrada.isEmpty()) {
+                    continue;
+                }
+
+                // Análisis Léxico por archivo
+                PseudoLexer lexer = new PseudoLexer();
+                lexer.analizar(entrada);
+
+                // Análisis Sintáctico compartiendo la misma Tabla de Símbolos global
+                PseudoParser parser = new PseudoParser(ts);
+                parser.analizar(lexer);
+                procesados++;
+            }
+
+            if (procesados == 0) {
+                System.err.println("Error: No se pudo procesar ningún archivo .java correctamente.");
+                System.exit(1);
+            }
+
+            // ⋆˖⁺‧₊☽⛥Fase 3: Generación de Código Mermaid consolidado (MermaidCodeGenerator)⛥☾₊‧⁺˖⋆ //
             String codigoMermaid = MermaidCodeGenerator.generarMermaid(ts);
             System.out.println("\n*** Codigo Mermaid Generado ***\n");
             System.out.println(codigoMermaid);
 
-            // ⋆˖⁺‧₊☽⛥Fase 5: Generación de Archivo HTML Interactivo y Premium (HtmlReportGenerator)⛥☾₊‧⁺˖⋆ //
+            // ⋆˖⁺‧₊☽⛥Fase 4: Generación de Archivo HTML Interactivo y Premium (HtmlReportGenerator)⛥☾₊‧⁺˖⋆ //
             HtmlReportGenerator.generarReporte("./salida.html", codigoMermaid, rutaArchivo);
             System.out.println("\n=== Exito: Se ha generado 'salida.html' correctamente. ===");
 
