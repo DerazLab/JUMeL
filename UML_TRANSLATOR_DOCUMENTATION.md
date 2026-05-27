@@ -29,17 +29,22 @@ El traductor se estructura sobre la base de un compilador de cuatro fases lógic
   - Los atributos de instancia se modelan como `VariableSymbol`, registrando su nombre, su tipo y modificador de acceso.
   - Los métodos se registran como `MethodSymbol`, guardando sus parámetros (nombres y tipos) y su tipo de retorno.
 
-### 4. Generación del Archivo de Salida (HTML Interactivo)
-- **Clase principal**: `JavaToMermaidTranslator`
-- **Operación**: Transforma las estructuras y relaciones de la tabla de símbolos a sintaxis de Mermaid JS:
-  - **Herencia**: Se traduce a `SuperClase <|-- SubClase`
-  - **Composición / Asociación**: Se detecta si el tipo de un atributo corresponde a otra clase definida dentro de la tabla de símbolos global, traduciéndose a `ClaseA *-- ClaseB`.
-  - **Visibilidad**:
-    - `public` ➔ `+`
-    - `private` ➔ `-`
-    - `protected` ➔ `#`
-    - Package-private (default) ➔ `~`
-- El resultado se inyecta en una plantilla HTML premium con diseño oscuro futurista responsivo, tipografía Outfit e Inter, métricas automáticas y renderizado de Mermaid JS en tiempo real mediante CDN.
+### 4. Generación y Visualización de Salida (Arquitectura Clean & SOLID)
+Para cumplir rigurosamente con los principios de diseño de software moderno (**SOLID**), la lógica de generación y salida se ha descentralizado en componentes especializados con alta cohesión y bajo acoplamiento:
+- **`ProgramReader` (Principio de Responsabilidad Única - SRP)**:
+  - Clase encargada de manera exclusiva del acceso a archivos y lectura del código fuente original en formato UTF-8 de forma segura.
+- **`MermaidCodeGenerator` (SRP)**:
+  - Clase responsable de procesar la tabla de símbolos (`SymbolTable`) y mapear las clases, interfaces, tipos, miembros y estereotipos a la sintaxis exacta de **Mermaid JS**.
+  - Mapea las siguientes relaciones UML:
+    - **Herencia**: `SuperClase <|-- SubClase`
+    - **Realización / Implementación**: `Interfaz <|.. Clase`
+    - **Composición / Asociación**: `ClaseA *-- ClaseB` (detectado automáticamente si el tipo de un miembro coincide con el de otra clase en la tabla de símbolos).
+    - **Modificadores de Visibilidad**: `public` ➔ `+`, `private` ➔ `-`, `protected` ➔ `#`, package-private ➔ `~`.
+- **`HtmlReportGenerator` (SRP & OCP)**:
+  - Se encarga de la inyección del código Mermaid generado en un lienzo HTML interactivo premium.
+  - Ofrece un diseño moderno responsivo con visualización lado a lado (Diagrama UML renderizado dinámicamente frente al Código Fuente de Mermaid) y funcionalidad de copia con un clic, aplicando estética de *glassmorphism* de vanguardia, modo oscuro y tipografías `Outfit` y `Fira Code`.
+- **`JavaToMermaidTranslator` (Orquestador)**:
+  - Actúa estrictamente como el punto de entrada principal (`main`) que coordina y orquesta el flujo completo de traducción, logrando un diseño desacoplado y altamente escalable.
 
 ---
 
@@ -138,6 +143,20 @@ classDiagram
         -int numero
     }
 ```
+
+---
+
+## ✦ Resolución de Errores e Incidencias Técnicas
+
+Durante la fase de integración y renderizado web interactivo con **Mermaid JS**, se identificaron y resolvieron dos problemas críticos que provocaban el fallo `"Syntax error in text"` en el navegador:
+
+### 1. Corrupción de Sintaxis por Interpretación del DOM (Escapado HTML)
+* **Incidencia**: Los diagramas de clases UML contienen caracteres `<` y `>` para representar relaciones de herencia (`<|--`), realización (`<|..`) y estereotipos (`<<abstract>>`, `<<interface>>`). Si se inyectan directamente en el bloque `<pre class="mermaid">`, el analizador del navegador los interpreta erróneamente como etiquetas HTML inválidas o mal cerradas, destruyendo y corrompiendo la estructura de texto del DOM antes de que Mermaid JS la intente compilar.
+* **Solución**: Se implementó el escapado HTML estricto transformando dichos caracteres a entidades web (`&lt;` y `&gt;`). De esta manera, el navegador los trata como texto puro y Mermaid JS los lee e interpreta correctamente sin interferencias en el DOM.
+
+### 2. Sensibilidad a Espacios en Blanco en Contenedores `<pre>`
+* **Incidencia**: La etiqueta `<pre>` conserva de manera exacta todos los saltos de línea, tabulaciones y sangrados definidos en la plantilla del código Java. El sangrado decorativo introducía espacios iniciales antes de la declaración de `classDiagram`, lo cual es interpretado por Mermaid JS como un fallo de sintaxis.
+* **Solución**: Se eliminaron los saltos de línea y el espaciado interno en la declaración de la etiqueta en `HtmlReportGenerator.java`, y se aplicó la función `.trim()` a la variable del código generado para asegurar que el texto comience de forma limpia en el primer carácter útil.
 
 ---
 

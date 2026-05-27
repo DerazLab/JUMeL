@@ -3,14 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagrama de Clases UML</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Visualizador UML - Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #ea580c;
+            --primary-hover: #c2410c;
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --border: rgba(226, 232, 240, 0.6);
+            --code-bg: #f1f5f9;
+        }
         body {
             margin: 0;
             font-family: 'Outfit', sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at top right, rgba(234, 88, 12, 0.06), transparent 40%), 
+                              radial-gradient(circle at bottom left, rgba(249, 115, 22, 0.04), transparent 40%);
+            color: var(--text);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -19,66 +31,154 @@
             box-sizing: border-box;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1400px;
             width: 100%;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 0.5px solid var(--border);
+            border-radius: 16px;
             padding: 2.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.02), 0 10px 10px -5px rgba(15, 23, 42, 0.02);
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
         }
         h1 {
-            margin-top: 0;
-            font-size: 2rem;
+            margin: 0;
+            font-size: 2.5rem;
             font-weight: 800;
-            text-align: center;
-            color: #111827;
-            border-bottom: 2px solid #f3f4f6;
-            padding-bottom: 1rem;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.025em;
+        }
+        .subtitle {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
             margin-bottom: 2rem;
         }
-        .diagram-wrapper {
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            height: 600px;
+        }
+        .panel-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 0.5px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .panel-body {
+            flex: 1;
+            padding: 1.5rem;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+        /* Lado del UML */
+        .uml-body {
+            background: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 2rem;
-            background: #f9fafb;
-            border: 1px solid #f3f4f6;
-            border-radius: 8px;
-            margin-bottom: 2rem;
+            border-radius: 0 0 11px 11px;
         }
         .mermaid {
             width: 100%;
-            display: flex;
-            justify-content: center;
+        }
+        /* Lado del Código */
+        .code-body {
+            background: var(--code-bg);
+            margin: 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #0f172a;
+            white-space: pre-wrap;
+        }
+        .btn-copy {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-copy:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        .btn-copy:active {
+            transform: translateY(0);
         }
         .footer {
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             text-align: center;
-            font-size: 0.9rem;
-            color: #6b7280;
-            border-top: 1px solid #f3f4f6;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            border-top: 0.5px solid var(--border);
             padding-top: 1.5rem;
         }
         .footer strong {
-            color: #374151;
+            color: var(--text);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Diagrama UML del Proyecto</h1>
+        <header>
+            <h1>Diagrama de Clases UML Interactivo</h1>
+            <div class="subtitle">Traductor Automático de Java a Mermaid JS</div>
+        </header>
         
-        <div class="diagram-wrapper">
-            <pre class="mermaid">
-classDiagram
-    NodoRed <|-- ServidorWired
-    IProtocolo <|.. ServidorWired
+        <div class="content-grid">
+            <!-- Panel Izquierdo: UML -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <span>Vista del Diagrama UML</span>
+                    </h2>
+                </div>
+                <div class="panel-body uml-body">
+                    <pre class="mermaid">classDiagram
+    NodoRed &lt;|-- ServidorWired
+    IProtocolo &lt;|.. ServidorWired
     ServidorWired *-- PaqueteDatos
-    Persona <|-- Estudiante
+    Persona &lt;|-- Estudiante
     Estudiante *-- Direccion
     class NodoRed {
-        <<abstract>>
+        &lt;&lt;abstract&gt;&gt;
         #String direccionIP
         +int anchoBanda
         +establecerConexion() void
@@ -90,7 +190,59 @@ classDiagram
         +mostrarDatos() void
     }
     class IProtocolo {
-        <<interface>>
+        &lt;&lt;interface&gt;&gt;
+        +enrutarDatos() void
+    }
+    class ServidorWired {
+        -String hostName
+        +PaqueteDatos colaMensajes
+        +enrutarDatos() void
+        +transmitir() void
+    }
+    class Estudiante {
+        -int matricula
+        +String nombre
+        +Direccion domicilio
+        +estudiar() void
+    }
+    class PaqueteDatos {
+        -String payload
+    }
+    class Direccion {
+        +String calle
+        -int numero
+    }</pre>
+                </div>
+            </div>
+            
+            <!-- Panel Derecho: Código -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <span>Código Mermaid JS</span>
+                    </h2>
+                    <button class="btn-copy" onclick="copyCode()">Copiar Código</button>
+                </div>
+                <pre class="panel-body code-body" id="mermaid-code">classDiagram
+    NodoRed &lt;|-- ServidorWired
+    IProtocolo &lt;|.. ServidorWired
+    ServidorWired *-- PaqueteDatos
+    Persona &lt;|-- Estudiante
+    Estudiante *-- Direccion
+    class NodoRed {
+        &lt;&lt;abstract&gt;&gt;
+        #String direccionIP
+        +int anchoBanda
+        +establecerConexion() void
+        +transmitir() void
+    }
+    class Persona {
+        -String curp
+        #String fechaNacimiento
+        +mostrarDatos() void
+    }
+    class IProtocolo {
+        &lt;&lt;interface&gt;&gt;
         +enrutarDatos() void
     }
     class ServidorWired {
@@ -112,8 +264,8 @@ classDiagram
         +String calle
         -int numero
     }
-
-            </pre>
+</pre>
+            </div>
         </div>
         
         <div class="footer">
@@ -126,8 +278,26 @@ classDiagram
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
         mermaid.initialize({
             startOnLoad: true,
-            theme: 'default'
+            theme: 'default',
+            securityLevel: 'loose'
         });
+    </script>
+    <script>
+        window.copyCode = function() {
+            const codeText = document.getElementById('mermaid-code').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                const originalText = btn.innerText;
+                btn.innerText = '¡Copiado!';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Error al copiar el código: ', err);
+            });
+        }
     </script>
 </body>
 </html>
