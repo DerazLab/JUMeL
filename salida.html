@@ -109,9 +109,54 @@
             justify-content: center;
             align-items: center;
             border-radius: 0 0 11px 11px;
+            position: relative;
+            overflow: hidden;
+            cursor: grab;
+            user-select: none;
+        }
+        .uml-body:active {
+            cursor: grabbing;
         }
         .mermaid {
             width: 100%;
+            transition: transform 0.05s ease-out;
+            transform-origin: center center;
+        }
+        /* Controles de Zoom Premium */
+        .zoom-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+        .zoom-controls button {
+            background: rgba(255, 255, 255, 0.9);
+            border: 0.5px solid var(--border);
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s;
+            backdrop-filter: blur(8px);
+        }
+        .zoom-controls button:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .zoom-controls button:active {
+            transform: translateY(0);
         }
         /* Lado del Código */
         .code-body {
@@ -214,6 +259,11 @@
         +String calle
         -int numero
     }</pre>
+                    <div class="zoom-controls">
+                        <button onclick="zoomIn()" title="Acercar">＋</button>
+                        <button onclick="zoomOut()" title="Alejar">－</button>
+                        <button onclick="resetZoom()" title="Restablecer">⟲</button>
+                    </div>
                 </div>
             </div>
             
@@ -287,6 +337,91 @@
         });
     </script>
     <script>
+        // Zoom & Pan interactivo para el Diagrama UML
+        let scale = 1;
+        let pointX = 0;
+        let pointY = 0;
+        let startX = 0;
+        let startY = 0;
+        let isDragging = false;
+
+        const container = document.querySelector('.uml-body');
+
+        // Configuración inicial del SVG cuando se renderiza
+        const observer = new MutationObserver((mutations) => {
+            const svg = container.querySelector('svg');
+            if (svg) {
+                svg.style.transition = 'transform 0.05s ease-out';
+                svg.style.transformOrigin = 'center center';
+                observer.disconnect();
+            }
+        });
+        observer.observe(container, { childList: true, subtree: true });
+
+        container.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.zoom-controls')) return;
+            e.preventDefault();
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+            isDragging = true;
+            startX = e.clientX - pointX;
+            startY = e.clientY - pointY;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        container.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+            pointX = e.clientX - startX;
+            pointY = e.clientY - startY;
+            updateTransform(svg);
+        });
+
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+            
+            const zoomSpeed = 0.08;
+            if (e.deltaY < 0) {
+                scale = Math.min(scale + zoomSpeed, 5);
+            } else {
+                scale = Math.max(scale - zoomSpeed, 0.15);
+            }
+            updateTransform(svg);
+        });
+
+        function updateTransform(svg) {
+            svg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        }
+
+        window.zoomIn = function() {
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+            scale = Math.min(scale + 0.15, 5);
+            updateTransform(svg);
+        }
+
+        window.zoomOut = function() {
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+            scale = Math.max(scale - 0.15, 0.15);
+            updateTransform(svg);
+        }
+
+        window.resetZoom = function() {
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+            scale = 1;
+            pointX = 0;
+            pointY = 0;
+            updateTransform(svg);
+        }
+
         window.copyCode = function() {
             const codeText = document.getElementById('mermaid-code').innerText;
             navigator.clipboard.writeText(codeText).then(() => {

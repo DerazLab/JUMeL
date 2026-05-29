@@ -123,9 +123,54 @@ public class HtmlReportGenerator {
                 "            justify-content: center;\n" +
                 "            align-items: center;\n" +
                 "            border-radius: 0 0 11px 11px;\n" +
+                "            position: relative;\n" +
+                "            overflow: hidden;\n" +
+                "            cursor: grab;\n" +
+                "            user-select: none;\n" +
+                "        }\n" +
+                "        .uml-body:active {\n" +
+                "            cursor: grabbing;\n" +
                 "        }\n" +
                 "        .mermaid {\n" +
                 "            width: 100%;\n" +
+                "            transition: transform 0.05s ease-out;\n" +
+                "            transform-origin: center center;\n" +
+                "        }\n" +
+                "        /* Controles de Zoom Premium */\n" +
+                "        .zoom-controls {\n" +
+                "            position: absolute;\n" +
+                "            bottom: 1rem;\n" +
+                "            right: 1rem;\n" +
+                "            display: flex;\n" +
+                "            flex-direction: column;\n" +
+                "            gap: 0.5rem;\n" +
+                "            z-index: 10;\n" +
+                "        }\n" +
+                "        .zoom-controls button {\n" +
+                "            background: rgba(255, 255, 255, 0.9);\n" +
+                "            border: 0.5px solid var(--border);\n" +
+                "            color: var(--text);\n" +
+                "            font-size: 1.1rem;\n" +
+                "            font-weight: 600;\n" +
+                "            width: 36px;\n" +
+                "            height: 36px;\n" +
+                "            border-radius: 8px;\n" +
+                "            cursor: pointer;\n" +
+                "            display: flex;\n" +
+                "            align-items: center;\n" +
+                "            justify-content: center;\n" +
+                "            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);\n" +
+                "            transition: all 0.2s;\n" +
+                "            backdrop-filter: blur(8px);\n" +
+                "        }\n" +
+                "        .zoom-controls button:hover {\n" +
+                "            background: var(--primary);\n" +
+                "            color: white;\n" +
+                "            border-color: var(--primary);\n" +
+                "            transform: translateY(-1px);\n" +
+                "        }\n" +
+                "        .zoom-controls button:active {\n" +
+                "            transform: translateY(0);\n" +
                 "        }\n" +
                 "        /* Lado del Código */\n" +
                 "        .code-body {\n" +
@@ -186,6 +231,11 @@ public class HtmlReportGenerator {
                 "                </div>\n" +
                 "                <div class=\"panel-body uml-body\">\n" +
                 "                    <pre class=\"mermaid\">" + codigoMermaidEscapado.trim() + "</pre>\n" +
+                "                    <div class=\"zoom-controls\">\n" +
+                "                        <button onclick=\"zoomIn()\" title=\"Acercar\">＋</button>\n" +
+                "                        <button onclick=\"zoomOut()\" title=\"Alejar\">－</button>\n" +
+                "                        <button onclick=\"resetZoom()\" title=\"Restablecer\">⟲</button>\n" +
+                "                    </div>\n" +
                 "                </div>\n" +
                 "            </div>\n" +
                 "            \n" +
@@ -216,6 +266,91 @@ public class HtmlReportGenerator {
                 "        });\n" +
                 "    </script>\n" +
                 "    <script>\n" +
+                "        // Zoom & Pan interactivo para el Diagrama UML\n" +
+                "        let scale = 1;\n" +
+                "        let pointX = 0;\n" +
+                "        let pointY = 0;\n" +
+                "        let startX = 0;\n" +
+                "        let startY = 0;\n" +
+                "        let isDragging = false;\n" +
+                "\n" +
+                "        const container = document.querySelector('.uml-body');\n" +
+                "\n" +
+                "        // Configuración inicial del SVG cuando se renderiza\n" +
+                "        const observer = new MutationObserver((mutations) => {\n" +
+                "            const svg = container.querySelector('svg');\n" +
+                "            if (svg) {\n" +
+                "                svg.style.transition = 'transform 0.05s ease-out';\n" +
+                "                svg.style.transformOrigin = 'center center';\n" +
+                "                observer.disconnect();\n" +
+                "            }\n" +
+                "        });\n" +
+                "        observer.observe(container, { childList: true, subtree: true });\n" +
+                "\n" +
+                "        container.addEventListener('mousedown', (e) => {\n" +
+                "            if (e.target.closest('.zoom-controls')) return;\n" +
+                "            e.preventDefault();\n" +
+                "            const svg = container.querySelector('svg');\n" +
+                "            if (!svg) return;\n" +
+                "            isDragging = true;\n" +
+                "            startX = e.clientX - pointX;\n" +
+                "            startY = e.clientY - pointY;\n" +
+                "        });\n" +
+                "\n" +
+                "        window.addEventListener('mouseup', () => {\n" +
+                "            isDragging = false;\n" +
+                "        });\n" +
+                "\n" +
+                "        container.addEventListener('mousemove', (e) => {\n" +
+                "            if (!isDragging) return;\n" +
+                "            const svg = container.querySelector('svg');\n" +
+                "            if (!svg) return;\n" +
+                "            pointX = e.clientX - startX;\n" +
+                "            pointY = e.clientY - startY;\n" +
+                "            updateTransform(svg);\n" +
+                "        });\n" +
+                "\n" +
+                "        container.addEventListener('wheel', (e) => {\n" +
+                "            e.preventDefault();\n" +
+                "            const svg = container.querySelector('svg');\n" +
+                "            if (!svg) return;\n" +
+                "            \n" +
+                "            const zoomSpeed = 0.08;\n" +
+                "            if (e.deltaY < 0) {\n" +
+                "                scale = Math.min(scale + zoomSpeed, 5);\n" +
+                "            } else {\n" +
+                "                scale = Math.max(scale - zoomSpeed, 0.15);\n" +
+                "            }\n" +
+                "            updateTransform(svg);\n" +
+                "        });\n" +
+                "\n" +
+                "        function updateTransform(svg) {\n" +
+                "            svg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;\n" +
+                "        }\n" +
+                "\n" +
+                "        window.zoomIn = function() {\n" +
+                "            const svg = container.querySelector('svg');\n" +
+                "            if (!svg) return;\n" +
+                "            scale = Math.min(scale + 0.15, 5);\n" +
+                "            updateTransform(svg);\n" +
+                "        }\n" +
+                "\n" +
+                "        window.zoomOut = function() {\n" +
+                "            const svg = container.querySelector('svg');\n" +
+                "            if (!svg) return;\n" +
+                "            scale = Math.max(scale - 0.15, 0.15);\n" +
+                "            updateTransform(svg);\n" +
+                "        }\n" +
+                "\n" +
+                "        window.resetZoom = function() {\n" +
+                "            const svg = container.querySelector('svg');\n" +
+                "            if (!svg) return;\n" +
+                "            scale = 1;\n" +
+                "            pointX = 0;\n" +
+                "            pointY = 0;\n" +
+                "            updateTransform(svg);\n" +
+                "        }\n" +
+                "\n" +
                 "        window.copyCode = function() {\n" +
                 "            const codeText = document.getElementById('mermaid-code').innerText;\n" +
                 "            navigator.clipboard.writeText(codeText).then(() => {\n" +
