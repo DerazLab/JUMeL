@@ -51,7 +51,7 @@ public class HtmlReportGenerator {
                 "            backdrop-filter: blur(16px);\n" +
                 "            -webkit-backdrop-filter: blur(16px);\n" +
                 "            border: 0.5px solid var(--border);\n" +
-                "            border-radius: 16px;\n" +
+                "            border-radius: 0px;\n" +
                 "            padding: 2.5rem;\n" +
                 "            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.02), 0 10px 10px -5px rgba(15, 23, 42, 0.02);\n" +
                 "        }\n" +
@@ -89,7 +89,7 @@ public class HtmlReportGenerator {
                 "            flex-direction: column;\n" +
                 "            background: #ffffff;\n" +
                 "            border: 0.5px solid var(--border);\n" +
-                "            border-radius: 12px;\n" +
+                "            border-radius: 0px;\n" +
                 "            overflow: hidden;\n" +
                 "            height: 600px;\n" +
                 "        }\n" +
@@ -122,7 +122,7 @@ public class HtmlReportGenerator {
                 "            display: flex;\n" +
                 "            justify-content: center;\n" +
                 "            align-items: center;\n" +
-                "            border-radius: 0 0 11px 11px;\n" +
+                "            border-radius: 0px;\n" +
                 "            position: relative;\n" +
                 "            overflow: hidden;\n" +
                 "            cursor: grab;\n" +
@@ -154,7 +154,7 @@ public class HtmlReportGenerator {
                 "            font-weight: 600;\n" +
                 "            width: 36px;\n" +
                 "            height: 36px;\n" +
-                "            border-radius: 8px;\n" +
+                "            border-radius: 0px;\n" +
                 "            cursor: pointer;\n" +
                 "            display: flex;\n" +
                 "            align-items: center;\n" +
@@ -187,7 +187,7 @@ public class HtmlReportGenerator {
                 "            color: white;\n" +
                 "            border: none;\n" +
                 "            padding: 0.4rem 0.8rem;\n" +
-                "            border-radius: 6px;\n" +
+                "            border-radius: 0px;\n" +
                 "            font-family: inherit;\n" +
                 "            font-size: 0.85rem;\n" +
                 "            font-weight: 600;\n" +
