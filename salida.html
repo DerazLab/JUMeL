@@ -172,18 +172,41 @@
                 </div>
                 <div class="panel-body uml-body">
                     <pre class="mermaid">classDiagram
+    NodoRed &lt;|-- ServidorWired
+    IProtocolo &lt;|.. ServidorWired
+    ServidorWired *-- PaqueteDatos
     Persona &lt;|-- Estudiante
     Estudiante *-- Direccion
+    class NodoRed {
+        &lt;&lt;abstract&gt;&gt;
+        #String direccionIP
+        +int anchoBanda
+        +establecerConexion() void
+        +transmitir() void
+    }
     class Persona {
         -String curp
         #String fechaNacimiento
         +mostrarDatos() void
+    }
+    class IProtocolo {
+        &lt;&lt;interface&gt;&gt;
+        +enrutarDatos() void
+    }
+    class ServidorWired {
+        -String hostName
+        +PaqueteDatos colaMensajes
+        +enrutarDatos() void
+        +transmitir() void
     }
     class Estudiante {
         -int matricula
         +String nombre
         +Direccion domicilio
         +estudiar() void
+    }
+    class PaqueteDatos {
+        -String payload
     }
     class Direccion {
         +String calle
@@ -201,18 +224,41 @@
                     <button class="btn-copy" onclick="copyCode()">Copiar Código</button>
                 </div>
                 <pre class="panel-body code-body" id="mermaid-code">classDiagram
+    NodoRed &lt;|-- ServidorWired
+    IProtocolo &lt;|.. ServidorWired
+    ServidorWired *-- PaqueteDatos
     Persona &lt;|-- Estudiante
     Estudiante *-- Direccion
+    class NodoRed {
+        &lt;&lt;abstract&gt;&gt;
+        #String direccionIP
+        +int anchoBanda
+        +establecerConexion() void
+        +transmitir() void
+    }
     class Persona {
         -String curp
         #String fechaNacimiento
         +mostrarDatos() void
+    }
+    class IProtocolo {
+        &lt;&lt;interface&gt;&gt;
+        +enrutarDatos() void
+    }
+    class ServidorWired {
+        -String hostName
+        +PaqueteDatos colaMensajes
+        +enrutarDatos() void
+        +transmitir() void
     }
     class Estudiante {
         -int matricula
         +String nombre
         +Direccion domicilio
         +estudiar() void
+    }
+    class PaqueteDatos {
+        -String payload
     }
     class Direccion {
         +String calle
@@ -223,7 +269,7 @@
         </div>
         
         <div class="footer">
-            <p>Archivo de origen: <code>./PruebaMulti</code></p>
+            <p>Archivo de origen: <code>./Estudiante.java</code></p>
             <p>Desarrollado por: <strong>Deraz Labrador Emmanuel</strong> y <strong>Salazar Leal Javier Issac</strong></p>
         </div>
     </div>

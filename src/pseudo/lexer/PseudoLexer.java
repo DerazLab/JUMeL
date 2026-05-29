@@ -21,19 +21,6 @@ public class PseudoLexer {
         tipos.add(new TipoToken(TipoToken.COMA, ","));
         tipos.add(new TipoToken(TipoToken.PARENTESISIZQ, "\\("));
         tipos.add(new TipoToken(TipoToken.PARENTESISDER, "\\)"));
-        tipos.add(new TipoToken(TipoToken.INICIOPROGRAMA, "inicio-programa"));
-        tipos.add(new TipoToken(TipoToken.FINPROGRAMA, "fin-programa"));
-        tipos.add(new TipoToken(TipoToken.LEER, "leer"));
-        tipos.add(new TipoToken(TipoToken.ESCRIBIR, "escribir"));
-        tipos.add(new TipoToken(TipoToken.SI, "si"));
-        tipos.add(new TipoToken(TipoToken.ENTONCES, "entonces"));
-        tipos.add(new TipoToken(TipoToken.FINSI, "fin-si"));
-        tipos.add(new TipoToken(TipoToken.MIENTRAS, "mientras"));
-        tipos.add(new TipoToken(TipoToken.FINMIENTRAS, "fin-mientras"));
-        //variables
-        tipos.add(new TipoToken(TipoToken.VARIABLES, "variables *:"));
-        tipos.add(new TipoToken(TipoToken.REPITE, "repite"));
-        tipos.add(new TipoToken(TipoToken.FINREPITE, "fin-repite"));
         
         // ⋆˖⁺‧₊☽⛥Registramos las palabras reservadas y simbolos de Java antes del patron general de VARIABLE⛥☾₊‧⁺˖⋆ //
         tipos.add(new TipoToken(TipoToken.PUBLIC, "public\\b"));
