@@ -175,6 +175,7 @@
     NodoRed &lt;|-- ServidorWired
     IProtocolo &lt;|.. ServidorWired
     ServidorWired *-- PaqueteDatos
+    ServidorWired *-- Estudiante
     Persona &lt;|-- Estudiante
     Estudiante *-- Direccion
     class NodoRed {
@@ -196,6 +197,7 @@
     class ServidorWired {
         -String hostName
         +PaqueteDatos colaMensajes
+        +Estudiante estudianteSesion
         +enrutarDatos() void
         +transmitir() void
     }
@@ -227,6 +229,7 @@
     NodoRed &lt;|-- ServidorWired
     IProtocolo &lt;|.. ServidorWired
     ServidorWired *-- PaqueteDatos
+    ServidorWired *-- Estudiante
     Persona &lt;|-- Estudiante
     Estudiante *-- Direccion
     class NodoRed {
@@ -248,6 +251,7 @@
     class ServidorWired {
         -String hostName
         +PaqueteDatos colaMensajes
+        +Estudiante estudianteSesion
         +enrutarDatos() void
         +transmitir() void
     }

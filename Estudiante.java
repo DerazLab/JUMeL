@@ -1,4 +1,4 @@
-// ⋆˖⁺‧₊☽⛥Clase base para probar herencia de clases⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Clase base que representa a cualquier persona en la comunidad universitaria ⛥☾₊‧⁺˖⋆ //
 public class Persona {
     private String curp;
     protected String fechaNacimiento;
@@ -8,18 +8,19 @@ public class Persona {
     }
 }
 
-// ⋆˖⁺‧₊☽⛥Clase para probar relacion de composicion⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Clase que representa la ubicacion física de una persona ⛥☾₊‧⁺˖⋆ //
 public class Direccion {
     public String calle;
     private int numero;
 }
 
-// ⋆˖⁺‧₊☽⛥Clase principal que hereda de Persona y contiene Direccion⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Clase que representa un estudiante, heredando de Persona y compuesto
+// por Direccion ⛥☾₊‧⁺˖⋆ //
 public class Estudiante extends Persona {
     private int matricula;
     public String nombre;
 
-    // Composicion/Agregacion con Direccion
+    // Relacion de composicion con Direccion
     public Direccion domicilio;
 
     public void estudiar() {
@@ -29,40 +30,44 @@ public class Estudiante extends Persona {
     }
 }
 
-// ⋆˖⁺‧₊☽⛥Interfaz para probar realizacion/implementacion y estereotipo <<interface>>⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Interfaz para la comunicacion en la red del campus ⛥☾₊‧⁺˖⋆ //
 public interface IProtocolo {
     public void enrutarDatos();
 }
 
-// ⋆˖⁺‧₊☽⛥Clase abstracta para probar herencia y estereotipo <<abstract>>⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Clase abstracta que modela cualquier nodo conectado a la red ⛥☾₊‧⁺˖⋆
+// //
 public abstract class NodoRed {
     protected String direccionIP;
     public int anchoBanda;
 
     public void establecerConexion() {
-        System.out.println("Conectando a la red...");
+        System.out.println("Conectando a la red del campus...");
     }
 
     public abstract void transmitir();
 }
 
-// ⋆˖⁺‧₊☽⛥Clase de soporte para composicion⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Estructura de datos simulada para transferir informacion en la red
+// ⛥☾₊‧⁺˖⋆ //
 public class PaqueteDatos {
     private String payload;
 }
 
-// ⋆˖⁺‧₊☽⛥Clase compleja que hereda, implementa y compone⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Servidor que gestiona las sesiones académicas y de red ⛥☾₊‧⁺˖⋆ //
 public class ServidorWired extends NodoRed implements IProtocolo {
     private String hostName;
-    
-    // Composicion/Agregacion con PaqueteDatos
+
+    // Relacion de composicion con PaqueteDatos
     public PaqueteDatos colaMensajes;
 
+    public Estudiante estudianteSesion;
+
     public void enrutarDatos() {
-        System.out.println("Enrutando datos...");
+        System.out.println("Enrutando datos de la sesion del estudiante...");
     }
 
     public void transmitir() {
-        System.out.println("Transmitiendo paquetes...");
+        System.out.println("Transmitiendo paquetes de datos académicos...");
     }
 }
