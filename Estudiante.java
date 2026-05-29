@@ -1,4 +1,4 @@
-// ⋆˖⁺‧₊☽⛥ Clase base que representa a cualquier persona en la comunidad universitaria ⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Clase normal que representa a cualquier persona en la comunidad universitaria ⛥☾₊‧⁺˖⋆ //
 public class Persona {
     private String curp;
     protected String fechaNacimiento;
@@ -8,7 +8,7 @@ public class Persona {
     }
 }
 
-// ⋆˖⁺‧₊☽⛥ Clase que representa la ubicacion física de una persona ⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Clase normal que representa la ubicacion de una persona ⛥☾₊‧⁺˖⋆ //
 public class Direccion {
     public String calle;
     private int numero;
@@ -54,7 +54,7 @@ public class PaqueteDatos {
     private String payload;
 }
 
-// ⋆˖⁺‧₊☽⛥ Servidor que gestiona las sesiones académicas y de red ⛥☾₊‧⁺˖⋆ //
+// ⋆˖⁺‧₊☽⛥ Servidor que gestiona las sesiones academicas y de red ⛥☾₊‧⁺˖⋆ //
 public class ServidorWired extends NodoRed implements IProtocolo {
     private String hostName;
 
